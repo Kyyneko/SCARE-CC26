@@ -1,7 +1,0 @@
-[
-  "Q1: Apakah model deep learning mampu mengklasifikasikan hypertrophic vs keloid scar dengan akurasi >=85%?",
-  "Q2: Arsitektur model mana yang memberikan performa terbaik?",
-  "Q3: Fitur visual apa yang paling membedakan kedua jenis bekas luka?",
-  "Q4: Apakah data augmentation signifikan meningkatkan performa model?",
-  "Q5: Apakah model cukup reliable sebagai alat bantu diagnosis awal?"
-]
