@@ -597,6 +597,11 @@ elif page == "Prediksi":
                 model_path = MODELS_DIR / f"{best['name']}.keras"
                 if model_path.exists():
                     try:
+                        import time
+                        progress_bar = st.progress(0, text="Menginisialisasi engine prediksi...")
+                        time.sleep(0.3)
+                        
+                        progress_bar.progress(25, text="Memuat model Deep Learning...")
                         import tensorflow as tf
                         from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 
@@ -606,6 +611,7 @@ elif page == "Prediksi":
 
                         model = load_model(model_path)
 
+                        progress_bar.progress(60, text="Mengekstrak fitur dan memproses gambar...")
                         uploaded.seek(0)
                         file_bytes = np.asarray(bytearray(uploaded.read()), dtype=np.uint8)
                         img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
@@ -614,9 +620,15 @@ elif page == "Prediksi":
                         img_input = preprocess_input(img.astype(np.float32))
                         img_input = np.expand_dims(img_input, axis=0)
 
+                        progress_bar.progress(85, text="Menganalisis pola klasifikasi...")
                         pred = model.predict(img_input, verbose=0)[0][0]
                         cls = 1 if pred >= 0.5 else 0
                         conf = pred if cls == 1 else 1 - pred
+                        
+                        progress_bar.progress(100, text="Selesai!")
+                        time.sleep(0.4)
+                        progress_bar.empty()
+
 
                         color = "#ef4444" if cls == 0 else "#3b82f6"
                         st.markdown(f"""
