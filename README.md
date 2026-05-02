@@ -33,7 +33,7 @@ Pemilihan teknologi dalam proyek ini didasarkan pada prinsip *scalability*, perf
 * **Mengapa:** TensorFlow menawarkan ekosistem paling matang untuk komputasi *Deep Learning*. Fitur `tf.data` dan integrasi *pre-trained weights* (Keras Applications) sangat vital untuk mengeksekusi arsitektur *Computer Vision* yang berat tanpa kendala *memory leak*.
 
 ### 2. Model Arsitektur: `MobileNetV2` (Transfer Learning)
-* **Mengapa:** Dari 5 arsitektur yang diuji (CNN Scratch, VGG16, ResNet50, EfficientNetB0, MobileNetV2), **MobileNetV2** terpilih karena efisiensi parameternya (hanya ~3.4 Juta parameter). Arsitektur berbasis *Depthwise Separable Convolution* ini sangat ringan untuk dideploy pada *cloud server* gratis (RAM sangat terbatas), namun tetap mempertahankan akurasi klasifikasi yang setara dengan model raksasa.
+* **Mengapa:** Dari 3 arsitektur yang diuji (CNN Scratch, MobileNetV2 Frozen, MobileNetV2 Fine-Tuned), **MobileNetV2** terpilih karena efisiensi parameternya (hanya ~3.4 Juta parameter). Arsitektur berbasis *Depthwise Separable Convolution* ini sangat ringan untuk dideploy pada *cloud server* gratis (RAM sangat terbatas), namun tetap mempertahankan akurasi klasifikasi yang setara dengan model raksasa.
 
 ### 3. Data Processing & Computer Vision: `OpenCV`, `NumPy`, `Pandas`
 * **Mengapa OpenCV:** Kecepatannya dalam mengeksekusi operasi matriks *low-level* (I/O, resize, konversi BGR ke RGB) jauh lebih unggul dibandingkan PIL/Pillow saat memproses ratusan gambar sekaligus. Digunakan juga untuk menghitung *Variance of Laplacian* (deteksi blur).
@@ -66,7 +66,7 @@ Proyek ini tidak sekadar melatih model, melainkan mengikuti standar pipeline MLO
 
 ## 📊 Hasil A/B Testing & Performa
 
-Berdasarkan hasil metrik pada set pengujian (*blind test data*), **MobileNetV2 (Frozen Base)** secara signifikan mengalahkan model *scratch* maupun kompetitor *pre-trained* lainnya:
+Berdasarkan hasil metrik pada set pengujian (*blind test data*), **MobileNetV2 (Frozen Base)** secara signifikan mengalahkan model *scratch* maupun iterasi *fine-tuning* lainnya:
 
 | Metrik | Skor (MobileNetV2) | Interpretasi Klinis |
 |---|---|---|
