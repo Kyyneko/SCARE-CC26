@@ -16,7 +16,7 @@ import cv2
 # -- Config --
 st.set_page_config(page_title="SCARE Dashboard", page_icon="", layout="wide")
 
-BASE_DIR = Path(r"d:\Coding Camp 2026\Data-scientist")
+BASE_DIR = Path(__file__).parent
 OUTPUT_DIR = BASE_DIR / "output"
 PLOTS_DIR = OUTPUT_DIR / "plots"
 METRICS_DIR = OUTPUT_DIR / "metrics"
