@@ -39,26 +39,22 @@ Pemilihan teknologi difokuskan pada performa *client-side*, kemudahan integrasi 
 
 ## 🏗️ Folder Structure & Architecture
 
-Proyek ini menggunakan struktur modular yang terorganisir di dalam direktori `front-end/` untuk memudahkan kolaborasi:
+Proyek ini memisahkan direktori UI ke dalam folder `front-end/` dan mengikuti standar arsitektur yang sangat rapi untuk memudahkan pemeliharaan serta kolaborasi *Full-Stack*:
 
-```text
-front-end/
-├── public/               # Aset publik statis
-└── src/
-    ├── assets/           # Aset visual dan logo SCARE
-    ├── components/       # Komponen atomik dan molekular
-    │   ├── layout/       # Footer.jsx, Navbar.jsx
-    │   └── ui/           # ScarCard.jsx, ChecklistItem.jsx, ScrollToTop.jsx
-    ├── hooks/            # Custom React Hooks
-    ├── layouts/          # MainLayout.jsx (Pembungkus utama)
-    ├── pages/            # Halaman utama aplikasi:
-    │   ├── Analysis/     # Modul kamera dan pemrosesan gambar
-    │   ├── Home/         # Beranda edukasi
-    │   ├── NotFound/     # Penanganan halaman tidak ditemukan
-    │   ├── ServerError/  # Fallback kegagalan sistem
-    │   └── Treatment/    # Hasil diagnosis dan protokol medis
-    ├── services/         # Integrasi API dan logika eksternal
-    └── App.jsx           # Sentralisasi rute aplikasi
+* `src/assets/`: Menyimpan aset gambar klinis dan logo identitas SCARE.
+* `src/components/`: Berisi komponen *reusable* untuk membangun antarmuka, mencakup komponen mandiri seperti `ScrollToTop.jsx` dan sub-folder spesifik:
+    * `layout/`: Komponen struktural seperti `Navbar.jsx` dan `Footer.jsx`.
+    * `ui/`: Komponen antarmuka mikro seperti `ScarCard.jsx` dan `ChecklistItem.jsx`.
+* `src/hooks/`: Tempat untuk menyimpan *Custom React Hooks* guna memisahkan logika dari tampilan.
+* `src/layouts/`: Berisi `MainLayout.jsx` sebagai pembungkus utama tata letak halaman.
+* `src/pages/`: Halaman utama aplikasi yang dipecah per fitur:
+    * **Home**: Beranda dan edukasi perbedaan Keloid vs Hypertrophic.
+    * **Analysis**: Modul kamera, *upload*, dan integrasi pemrosesan AI.
+    * **Treatment**: Dashboard hasil diagnosis dan protokol pengobatan.
+    * **NotFound**: Penanganan halaman tidak ditemukan (404).
+    * **ServerError**: Penanganan kegagalan sistem AI/API (500).
+* `src/services/`: Berisi konfigurasi dan logika untuk komunikasi data ke API Back-End.
+* `src/utils/`: Menyimpan fungsi-fungsi *helper* atau utilitas pendukung yang dapat digunakan berulang di seluruh aplikasi dan logika untuk komunikasi data ke API Back-End.
 
 ---
 
