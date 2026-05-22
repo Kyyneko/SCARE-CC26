@@ -37,8 +37,28 @@ const getCroppedImg = async (imageSrc, pixelCrop) => {
   return canvas.toDataURL("image/png");
 };
 
+const dataURLtoBlob = (dataurl) => {
+  let arr = dataurl.split(","),
+    mime = arr[0].match(/:(.*?);/)[1],
+    bstr = atob(arr[1]),
+    n = bstr.length,
+    u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new Blob([u8arr], { type: mime });
+};
+
 export default function Analysis() {
   const navigate = useNavigate();
+  const [sessionId] = useState(() => {
+    let sessId = sessionStorage.getItem("scare_session_id");
+    if (!sessId) {
+      sessId = "sess_" + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+      sessionStorage.setItem("scare_session_id", sessId);
+    }
+    return sessId;
+  });
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [imageSource, setImageSource] = useState(null);
   const [mediaStream, setMediaStream] = useState(null);
@@ -122,18 +142,45 @@ export default function Analysis() {
     setIsAnalyzing(true);
 
     try {
+      // 1. Dapatkan file cropped base64
       const croppedImage = await getCroppedImg(imageSource, croppedAreaPixels);
       setFinalCroppedImage(croppedImage);
 
-      setTimeout(() => {
-        setIsAnalyzing(false);
+      // 2. Konversi Base64 ke Blob & File
+      const blob = dataURLtoBlob(croppedImage);
+      const file = new File([blob], "scar_scan.png", { type: "image/png" });
+
+      // 3. Buat FormData payload
+      const formData = new FormData();
+      formData.append("image", file);
+      formData.append("sessionId", sessionId);
+
+      // 4. Lakukan Networking Call (Kriteria 1) ke Express Backend
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+      const response = await fetch(`${API_URL}/api/predict`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Gagal melakukan analisis gambar luka.");
+      }
+
+      const resData = await response.json();
+
+      if (resData.status === "success") {
         setAnalysisResult({
-          label: "Keloid",
-          accuracy: "97.7%",
+          label: resData.data.label,
+          accuracy: resData.data.accuracy,
         });
-      }, 2500);
+      } else {
+        throw new Error(resData.message || "Terjadi kesalahan analisis.");
+      }
     } catch (e) {
-      console.error(e);
+      console.error("Analysis error:", e);
+      // Proteksi Crash: Navigasi ke Server Error page jika terjadi crash/kegagalan sistem
+      navigate("/500");
+    } finally {
       setIsAnalyzing(false);
     }
   };
