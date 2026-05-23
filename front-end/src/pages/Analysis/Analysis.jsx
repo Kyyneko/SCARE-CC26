@@ -51,14 +51,6 @@ const dataURLtoBlob = (dataurl) => {
 
 export default function Analysis() {
   const navigate = useNavigate();
-  const [sessionId] = useState(() => {
-    let sessId = sessionStorage.getItem("scare_session_id");
-    if (!sessId) {
-      sessId = "sess_" + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
-      sessionStorage.setItem("scare_session_id", sessId);
-    }
-    return sessId;
-  });
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [imageSource, setImageSource] = useState(null);
   const [mediaStream, setMediaStream] = useState(null);
@@ -153,7 +145,6 @@ export default function Analysis() {
       // 3. Buat FormData payload
       const formData = new FormData();
       formData.append("image", file);
-      formData.append("sessionId", sessionId);
 
       // 4. Lakukan Networking Call (Kriteria 1) ke Express Backend
       const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";

@@ -7,10 +7,6 @@ const Prediction = sequelize.define("Prediction", {
     defaultValue: DataTypes.UUIDV4,
     primaryKey: true,
   },
-  sessionId: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
   label: {
     type: DataTypes.STRING,
     allowNull: false,

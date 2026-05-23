@@ -16,7 +16,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Sinkronisasi Database
-sequelize.sync({ force: false }) // force: false memastikan data tidak terhapus setiap server restart
+sequelize.sync({ force: false })
   .then(() => console.log("Database SQLite berhasil disinkronisasi."))
   .catch((err) => console.error("Gagal sinkronisasi database:", err));
 
@@ -38,11 +38,9 @@ const upload = multer({
 // ENDPOINT RESTful API
 // ==========================================
 
-// 1. POST /api/predict - Melakukan klasifikasi AI & simpan metadata ke database
+// 1. POST /api/predict - Klasifikasi AI & simpan metadata ke database
 app.post("/api/predict", upload.single("image"), async (req, res, next) => {
   try {
-    const { sessionId } = req.body;
-
     // Proteksi: validasi input file
     if (!req.file) {
       return res.status(400).json({
@@ -51,27 +49,18 @@ app.post("/api/predict", upload.single("image"), async (req, res, next) => {
       });
     }
 
-    // Proteksi: validasi session ID
-    if (!sessionId) {
-      return res.status(400).json({
-        status: "fail",
-        message: "Parameter sessionId wajib disertakan.",
-      });
-    }
-
-    console.log(`[POST /api/predict] Memproses gambar untuk sessionId: ${sessionId}`);
+    console.log(`[POST /api/predict] Memproses gambar...`);
 
     // Proses klasifikasi menggunakan Service AI
     const result = await classifyScar(req.file.buffer);
 
-    // Simpan metadata analisis ke database (TIDAK menyimpan file gambar untuk menjaga privasi)
+    // Simpan metadata hasil analisis ke database (TIDAK menyimpan file gambar)
     const prediction = await Prediction.create({
-      sessionId: sessionId,
       label: result.label,
       accuracy: result.accuracy,
     });
 
-    // Kembalikan respons RESTful yang rapi
+    // Kembalikan respons RESTful
     return res.status(201).json({
       status: "success",
       message: "Model classified successfully",
@@ -83,28 +72,16 @@ app.post("/api/predict", upload.single("image"), async (req, res, next) => {
       },
     });
   } catch (error) {
-    next(error); // Lempar error ke middleware global agar tidak crash
+    next(error);
   }
 });
 
-// 2. GET /api/predictions - Mengambil riwayat analisis (bisa disaring per sessionId)
+// 2. GET /api/predictions - Mengambil seluruh riwayat analisis
 app.get("/api/predictions", async (req, res, next) => {
   try {
-    const { sessionId } = req.query;
-    let predictions;
-
-    if (sessionId) {
-      // Mengambil riwayat hanya untuk session aktif pengguna saat ini
-      predictions = await Prediction.findAll({
-        where: { sessionId },
-        order: [["createdAt", "DESC"]],
-      });
-    } else {
-      // Mengambil seluruh riwayat anonim (misal untuk statistik global)
-      predictions = await Prediction.findAll({
-        order: [["createdAt", "DESC"]],
-      });
-    }
+    const predictions = await Prediction.findAll({
+      order: [["createdAt", "DESC"]],
+    });
 
     return res.status(200).json({
       status: "success",
@@ -116,28 +93,25 @@ app.get("/api/predictions", async (req, res, next) => {
   }
 });
 
-// 3. DELETE /api/predictions - Menghapus semua riwayat sesi aktif (fitur privasi user)
-app.delete("/api/predictions", async (req, res, next) => {
+// 3. DELETE /api/predictions/:id - Menghapus riwayat berdasarkan ID
+app.delete("/api/predictions/:id", async (req, res, next) => {
   try {
-    const { sessionId } = req.query;
+    const { id } = req.params;
 
-    if (!sessionId) {
-      return res.status(400).json({
+    const deleted = await Prediction.destroy({
+      where: { id },
+    });
+
+    if (!deleted) {
+      return res.status(404).json({
         status: "fail",
-        message: "Parameter sessionId wajib disertakan untuk menghapus riwayat.",
+        message: "Data tidak ditemukan.",
       });
     }
 
-    console.log(`[DELETE /api/predictions] Menghapus riwayat untuk sessionId: ${sessionId}`);
-
-    // Menghapus data riwayat sesi aktif dari database
-    const deletedCount = await Prediction.destroy({
-      where: { sessionId },
-    });
-
     return res.status(200).json({
       status: "success",
-      message: `Berhasil menghapus ${deletedCount} riwayat sesi dari database.`,
+      message: "Riwayat berhasil dihapus dari database.",
     });
   } catch (error) {
     next(error);
@@ -159,7 +133,7 @@ app.use((err, req, res, next) => {
   console.error("Terjadi error pada API SCARE:", err.message);
 
   const statusCode = err.name === "MulterError" ? 400 : 500;
-  
+
   res.status(statusCode).json({
     status: "error",
     message: err.message || "Terjadi kesalahan internal pada server SCARE.",
