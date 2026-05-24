@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import axios from "axios";
 import {
   FiCamera,
   FiUploadCloud,
@@ -146,18 +147,15 @@ export default function Analysis() {
       const formData = new FormData();
       formData.append("image", file);
 
-      // 4. Lakukan Networking Call (Kriteria 1) ke Express Backend
+      // 4. Lakukan Networking Call (Kriteria 1) ke Express Backend menggunakan Axios
       const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
-      const response = await fetch(`${API_URL}/api/predict`, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error("Gagal melakukan analisis gambar luka.");
-      }
-
-      const resData = await response.json();
+      const { data: resData } = await axios.post(
+        `${API_URL}/api/predict`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
 
       if (resData.status === "success") {
         setAnalysisResult({
