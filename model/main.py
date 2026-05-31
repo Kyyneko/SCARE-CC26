@@ -6,10 +6,10 @@ from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 try:
-    import tflite_runtime.interpreter as tflite
+    from ai_edge_litert import interpreter as tflite
 except ImportError:
     try:
-        import ai_edge_litert.interpreter as tflite
+        import tflite_runtime.interpreter as tflite
     except ImportError:
         import tensorflow.lite as tflite
 
@@ -28,7 +28,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-MODEL_PATH = "model/scar_model.tflite"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(BASE_DIR, "scar_model.tflite")
 CLASS_NAMES = ["Hypertrophic", "Keloid"]
 
 interpreter = None
@@ -102,6 +103,8 @@ async def predict(file: UploadFile = File(...)):
         confidence = float(scores[prediction_idx])
         
         return {
+            "label": CLASS_NAMES[prediction_idx],
+            "accuracy": f"{confidence * 100:.1f}%",
             "prediction": CLASS_NAMES[prediction_idx],
             "confidence": confidence,
             "all_scores": {
